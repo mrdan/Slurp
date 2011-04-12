@@ -1,0 +1,11 @@
+## Slurp
+
+### About
+Takes a RSS feed (designed for use with google reader feeds like "starred items") and downloads the first image found in each entry, generating a companion text file with the source URL and any text from the entry
+
+### Usage
+python slurp.py
+
+### Notes
++ Assumes all images are JPGs
++ Only takes the first image from each entry
