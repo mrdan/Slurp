@@ -5,9 +5,7 @@
 ## RSS IMG Slurp - Takes an rss feed and takes the first image from each entry (designed for use with google reader "starred item" feeds)
 ##
 
-#TODO: blacklist support for ad domains
-#TODO: some feeds stick in 1x1 images, probably for analytics, so they get counted. Annoying.
-#TODO: currently assumes all images are JPGs!
+#TODO: some feeds stick in 1x1 images, probably for analytics, so they get counted. Annoying. !!seems you need to instal PIL to work with image details!!
 
 import feedparser
 import os
@@ -18,6 +16,7 @@ from HTMLParser import HTMLParser
 _filedir = "./slurped/"
 userid = "000000000000000"
 retrieveNum = "1000000000"
+blacklist = ["example.com"]
 
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -56,13 +55,14 @@ def downloadFromURL(URL, downloadName):
 # main function    
 def main():
     valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-    _filedir = "./slurped/"
     entries = getfeed("http://www.google.com/reader/public/atom/user/" + userid + "/state/com.google/starred?n=" + retrieveNum)
     x = 0
     print "Working…"
     while x < len(entries):
         safefilename = ""
         fieldtosearch = ""
+        badtouch = False
+        extension = ""
         
         # Find which field to search for images
         if entries[x].has_key('content'):
@@ -79,15 +79,24 @@ def main():
         if fieldtosearch != "":
             m = re.search("(?<=img\ssrc\=[\x27\x22])[^\x27\x22]*(?=[\x27\x22])", fieldtosearch)
             if m != None:
+                # Check blacklist
+                for domain in blacklist:
+                    if m.group(0).count(domain) > 0:
+                        logging.info(filename + " is on a blacklisted domain. Ignoring!")
+                        badtouch = True
+                if badtouch == True:
+                    x = x + 1
+                    continue
                 # We only want the first image
+                extension = os.path.splitext(m.group(0))[1]
                 if safefilename == "":
                     filename = time.strftime("%H%M%S%d%m%Y")
-                    downloadFromURL(m.group(0), filename +"_" + str(random.randint(1, 1000)) + ".jpg") #TODO: mightnt actually be a jpg!
+                    downloadFromURL(m.group(0), filename +"_" + str(random.randint(1, 1000)) + extension)
                 else:
-                    downloadFromURL(m.group(0), safefilename + ".jpg")
+                    downloadFromURL(m.group(0), safefilename + extension)
                     
         # Write companion text file
-        if os.path.exists(_filedir+safefilename+".jpg"):
+        if os.path.exists(_filedir+safefilename+extension):
             ourfile = codecs.open(_filedir + safefilename+".txt", 'w', encoding="utf-8")
             ourfile.write("## " + entries[x].links[0].href + '\n')
             if entries[x].has_key('title'):

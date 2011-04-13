@@ -6,6 +6,14 @@ Takes a RSS feed (designed for use with google reader feeds like "starred items"
 ### Usage
 python slurp.py
 
+### Options
+There're a few variables you can set near the top of the script:
++ "_filedir" sets the directory to save files in (must exist)
++ "userid" is the google reader user id, you can get it from the URL on the greader site
++ "retrieveNum" is the number of items from the greader feed to download. This is a function of the feed, not this script
++ "blacklist" is a string array. Just put in domains you want to ignore, it's used in a simple substring check
+
 ### Notes
-+ Assumes all images are JPGs
 + Only takes the first image from each entry
++ images without an extension in the URL will be left "as-is", i.e. the downloaded file won't have one either...
++ Would like to support a minimum-size option, to avoid downloading 1x1 size images that are just for tracking, but this apparently requires installing PIL
